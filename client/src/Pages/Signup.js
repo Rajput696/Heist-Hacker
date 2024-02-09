@@ -4,14 +4,14 @@ import { Button, FormControl, IconButton, Input, InputAdornment, InputLabel, Tex
 import "../css/Auth.css"
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import OtpInput from "react-otp-input";
 import LoadingBar from 'react-top-loading-bar';
-
+import InterviewerDetails from '../Interviewer/InterviewerDetails';
 
 
 export default function Signup() {
@@ -42,7 +42,6 @@ export default function Signup() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    await vaildEmailChecker(e.target.value);
   };
 
 
@@ -58,14 +57,14 @@ export default function Signup() {
   const [validOTP, setValidOTP] = useState(false);
 
 
-  const vaildEmailChecker = async (feild) => {
+  const vaildEmailChecker = async (feild, value) => {
     try {
-      const response = await fetch('/interviwer/credentials', {
+      const response = await fetch('/interviewer/credentials', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ [feild]: formData[feild] }),
+        body: JSON.stringify({ [feild]: value }),
       });
 
       if (!response.ok) {
@@ -93,9 +92,9 @@ export default function Signup() {
   const sendOtpFunction = async (e) => {
     e.preventDefault();
     setProgress(70);
-    formData.validOTP = await (Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000).toString();
+    formData.validOTP = await (Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000).toString();
     try {
-      const response = await fetch('/api/login/email/verify', {
+      const response = await fetch('/interviewer/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,44 +103,26 @@ export default function Signup() {
           from: 'chat.application@gmail.com',
           to: formData.email,
           subject: `Account Verification for Your ${appName}`,
-          text: `Dear ${formData.name},
+          html: `<p style="color: var(--primary-text-light); font-size: 16px; font-family: "Poppins", "sans-sarif";
+          ">Dear ${formData.name},</p>
+                        
+              <p style="color: var(--primary-text-light); font-size: 16px;">We hope this email finds you well. Thank you for choosing ${appName} as your preferred communication platform. To enhance the security of your account and ensure a safe and secure user experience, we require your assistance in completing the account verification process.</p>
+          
+              <p style="color: var(--primary-text-light); font-size: 16px; text-align: center;"><strong>Click the following link to access the verification page:</strong></p>
               
-              We hope this email finds you well. Thank you for choosing ${appName} as your preferred communication platform. To enhance the security of your account and ensure a safe and secure user experience, we require your assistance in completing the account verification process.
               
-              Please follow the instructions below to verify your account:
-              
-              1. Click the following link to access the verification page:
-              https://portfolio-madhav.vercel.app/
-              
-              2. Enter the One-Time Password (OTP) provided below when prompted:
-                 Your OTP: ${formData.validOTP}
-              
-                 Please note that the OTP is valid for a limited time, so we recommend completing the verification process as soon as possible.
-              
-              3. If you did not initiate this request or if you have any concerns, please contact our support team immediately at [Your Support Email Address].
-              
-              Thank you for your cooperation in ensuring the security of your account. We appreciate your trust in ${appName}.
-              
-              Best regards,
-              ${companyName}
-              ${appName} Support Team`,
-          html: `<p>Dear ${formData.name},</p>
-              
-              <p>We hope this email finds you well. Thank you for choosing ${appName} as your preferred communication platform. To enhance the security of your account and ensure a safe and secure user experience, we require your assistance in completing the account verification process.</p>
-              
-              <p><strong>Click the following link to access the verification page:</strong></p>
-              <p><a href="[Verification Link]">Verify My Account</a></p>
-              
-              <p><strong>Enter the One-Time Password (OTP) provided below when prompted:</strong></p>
-              <p><strong>Your OTP:</strong> ${formData.validOTP}</p>
-              
-              <p>Please note that the OTP is valid for a limited time, so we recommend completing the verification process as soon as possible.</p>
-              
-              <p>If you did not initiate this request or if you have any concerns, please contact our support team immediately at <a href="mailto:manumadhavjangid@gmail.com">E-Mail</a>.</p>
-              
-              <p>Thank you for your cooperation in ensuring the security of your account. We appreciate your trust in ${appName}.</p>
-              
-              <p>Best regards,<br>
+              <p style="color: var(--primary-blue4); text-align: center;  font-size: 16px;"><a href="https://portfolio-madhav.vercel.app/" style="color: var(--primary-blue4); text-decoration: none; text-align: center;">Verify My Account</a></p>
+          
+              <p style="color: var(--primary-text-light); text-align: center; font-size: 16px;"><strong>Enter the One-Time Password (OTP) provided below when prompted:</strong></p>
+              <p style="color: var(--primary-text-light); font-size: 29px; text-align: center;"><strong style="color: var(--primary-blue4);">${formData.validOTP}</strong></p>
+          
+              <p style="color: var(--primary-text-light); font-size: 16px;">Please note that the OTP is valid for a limited time, so we recommend completing the verification process as soon as possible.</p>
+          
+              <p style="color: var(--primary-text-light); font-size: 16px;">If you did not initiate this request or if you have any concerns, please contact our support team immediately at <a href="mailto:manumadhavjangid@gmail.com" style="color: var(--primary-blue4); text-decoration: none;">E-Mail</a>.</p>
+          
+              <p style="color: var(--primary-text-light); font-size: 16px;">Thank you for your cooperation in ensuring the security of your account. We appreciate your trust in ${appName}.</p>
+          
+              <p style="color: var(--primary-text-light); font-size: 16px;">Best regards,<br>
               ${companyName}<br>
               ${appName} Support Team</p>`,
         })
@@ -172,7 +153,7 @@ export default function Signup() {
     e.preventDefault();
     if (formData.validOTP === formData.otp) {
       try {
-        const response = await fetch('http://localhost:5000/Register', {
+        const response = await fetch('/interviwer/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -221,6 +202,9 @@ export default function Signup() {
 
   return (
     <div className='authPage'>
+      {Registered ? 
+      <Navigate to={<InterviewerDetails />}></Navigate>  : null 
+    }
       {/* {navigateUserToChats ?
         (
           localStorage.getItem('user') ?
@@ -230,7 +214,7 @@ export default function Signup() {
       } */}
       <LoadingBar
         height={5}
-        color='var(--primary-text-bark)'
+        color='var(--primary-text- bark)'
         progress={progress}
         onLoaderFinished={() => setProgress(0)}
       />
@@ -249,7 +233,6 @@ export default function Signup() {
           onSubmit={validEmail && validName ? handleRegister : handleError}
           className="authForm registerForm">
           <h2>Create Account..</h2>
-
           <div className='feilds'>
             <TextField
               className='inputFeild'
@@ -258,8 +241,9 @@ export default function Signup() {
               name='name'
               variant="standard"
               onChange={(e) => {
+                console.log(e.target.value);
                 handleInputChange(e);
-                vaildEmailChecker('name');
+                vaildEmailChecker('name', e.target.value);
               }} />
             {formData.name.length > 0 ? (
               <p>
@@ -277,7 +261,7 @@ export default function Signup() {
               variant="standard"
               onChange={(e) => {
                 handleInputChange(e);
-                vaildEmailChecker('email');
+                vaildEmailChecker('email', e.target.value);
               }} />
             {formData.email.length > 0 ? (
               <p>
@@ -314,14 +298,25 @@ export default function Signup() {
               inputStyle="otp-input"
               value={formData.otp}
               onChange={(otp) => handleInputChange({ target: { name: 'otp', value: otp } })}
-              numInputs={4}
+              numInputs={5}
               separator={<span>-</span>}
               renderInput={(props) => <input {...props} />}
             />
           </div>
 
-          <Button type='submit' className='authButtons' variant="contained" id='RegisterButton' >Register</Button> :
-          
+          {
+            validOTP ?
+              <Button type='submit' className='authButtons' variant="contained" id='RegisterButton' >Register</Button> :
+              <Button
+                variant="contained"
+                onClick={(e) => {
+                  validEmail && validName ? sendOtpFunction(e) : showMessages('error', 'All feilds are inportant');
+
+                }}
+                className='authButtons'
+                id='otpVerifyButton'
+              >Send OTP</Button>
+          }
           <h5><span></span> Or Login <span></span></h5>
           <h4>
             Already have an account
